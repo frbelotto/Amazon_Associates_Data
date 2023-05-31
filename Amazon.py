@@ -15,7 +15,6 @@ class Connection():
         self.pw = password
         self.session = self.conectar()
         self.links = self.html_parse()
-        print ('conexão definida')
 
     def conectar(self):
         auth = httpx.DigestAuth(self.usr, self.pw)
@@ -52,9 +51,9 @@ class Pasta():
     self.folder = fullfolder
 
 #function to extract the last 60 days of you xml files. Ajust as you desire
-def evaluate_file(conexão, links, pasta, type, format, pastdatelimit):
+def evaluate_file(connection, links, folder, type, format, pastdatelimit):
     #set file base name, type, extension and date
-    file_name = links.replace(f'getReport?filename={conexão.usr}-','')   
+    file_name = links.replace(f'getReport?filename={connection.usr}-','')   
     _1_= file_name.split('-')
     _2_ = _1_[-1].split('.')
     strip_file_name = _1_+_2_
@@ -64,7 +63,7 @@ def evaluate_file(conexão, links, pasta, type, format, pastdatelimit):
     limit_date = (date.today() - timedelta(days=pastdatelimit))
  
     #Check if file type folder is is available(Bounty, Earnings ou Orders)
-    fullfolder = path.join(pasta.folder, file_type)
+    fullfolder = path.join(folder.folder, file_type)
     if path.exists(fullfolder) == False :
         mkdir (fullfolder)
 
@@ -78,7 +77,7 @@ def evaluate_file(conexão, links, pasta, type, format, pastdatelimit):
         if path.exists(adjusted_fullpath) == False :
             try:    
                 with open(fullpath, 'wb') as gzfile:
-                    response = conexão.session.get(link)
+                    response = connection.session.get(link)
                     gzfile.write(response.content)
                     gzfile.close()
 
@@ -92,7 +91,7 @@ def evaluate_file(conexão, links, pasta, type, format, pastdatelimit):
                 #Deleta o arquivo compactado   
                 remove (fullpath)
             except ConnectionError as e:    # This is the correct syntax
-                print(f"O arquivo {fullpath} não foi baixado corretamente. Execute o código completo posteriormente para nova tentativa")
+                print(f"The file {fullpath} was not downloaded correctly. Try again to complete")
                 remove (fullpath)
 
 
@@ -102,4 +101,4 @@ amazon = Connection(user,pw)
 pasta = Pasta()
 
 for link in amazon.links:
-    evaluate_file(conexão=amazon, links=link, pasta=pasta, type=['earnings','orders','bounty'], format='xml', pastdatelimit=61)
+    evaluate_file(connection=amazon, links=link, folder=pasta, type=['earnings','orders','bounty'], format='xml', pastdatelimit=61)
